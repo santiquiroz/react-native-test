@@ -1,0 +1,1 @@
+export const baseUrl = 'http://http://www.empapeladosdecorativosenmedellin.com:3001/'
