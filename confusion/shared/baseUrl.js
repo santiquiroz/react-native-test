@@ -1,1 +1,1 @@
-export const baseUrl = 'http://http://www.empapeladosdecorativosenmedellin.com:3001/'
+export const baseUrl = 'http://186.83.193.208:3001/'

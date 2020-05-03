@@ -2,7 +2,19 @@ import React, { Component } from 'react';
 import { ScrollView, Text, FlatList } from 'react-native';
 import { ListItem } from 'react-native-elements';
 import { Card } from 'react-native-elements';
-import { LEADERS } from '../shared/leaders';
+
+import { connect } from 'react-redux';
+import { baseUrl } from '../shared/baseUrl';
+
+import { Loading } from './LoadingComponent';
+
+
+const mapStateToProps = state => {
+    return {
+      leaders: state.leaders
+    }
+  }
+
 function History() {
     return (
         <Card title="Our History">
@@ -22,12 +34,6 @@ function History() {
 
 class About extends Component {
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            leaders: LEADERS
-        };
-    }
 
     static navigationOptions = {
         title: 'About'
@@ -35,7 +41,7 @@ class About extends Component {
 
     render() {
 
-        const RenderLeader = ({ item, index }) => {
+        const renderLeader = ({ item, index }) => {
 
             return (
                 <ListItem
@@ -43,26 +49,49 @@ class About extends Component {
                     title={item.name}
                     subtitle={item.description}
                     hideChevron={true}
-                    leftAvatar={{ source: require('./images/alberto.png') }}
+                    leftAvatar={{source: {uri: baseUrl + item.image}}}
                 />
             );
         };
 
-
-        return (
-            <ScrollView>
-                <History></History>
-                <Card title="Corporate Leadership">
-                    <FlatList
-                        data={this.state.leaders}
-                        renderItem={RenderLeader}
+        if (this.props.leaders.isLoading) {
+            return(
+                <ScrollView>
+                    <History />
+                    <Card
+                        title='Corporate Leadership'>
+                        <Loading />
+                    </Card>
+                </ScrollView>
+            );
+        }
+        else if (this.props.leaders.errmess) {
+            return(
+                <ScrollView>
+                    <History />
+                    <Card
+                        title='Corporate Leadership'>
+                        <Text>{this.props.leaders.errmess}</Text>
+                    </Card>
+                </ScrollView>
+            );
+        }
+        else {
+            return(
+                <ScrollView>
+                    <History />
+                    <Card
+                        title='Corporate Leadership'>
+                    <FlatList 
+                        data={this.props.leaders.leaders}
+                        renderItem={renderLeader}
                         keyExtractor={item => item.id.toString()}
-                    />
-                </Card>
-
-            </ScrollView>
-        );
+                        />
+                    </Card>
+                </ScrollView>
+            );
+        }
     }
 }
 
-export default About;
+export default connect(mapStateToProps)(About);
