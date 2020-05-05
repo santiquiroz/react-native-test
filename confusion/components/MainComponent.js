@@ -4,6 +4,8 @@ import Home from './HomeComponent';
 import Contact from './ContactComponent';
 import About from './AboutComponent';
 import Dishdetail from './DishdetailComponent';
+import Favorites from './FavoriteComponent';
+
 import { View, Platform, Text, ScrollView, Image, StyleSheet } from 'react-native';
 import { createStackNavigator, createDrawerNavigator, DrawerItems, SafeAreaView } from 'react-navigation';
 import { Icon } from 'react-native-elements';
@@ -12,6 +14,7 @@ import { connect } from 'react-redux';
 import { fetchDishes, fetchComments, fetchPromos, fetchLeaders } from '../redux/ActionCreators';
 
 import Reservation from './ReservationComponent';
+
 
 const mapStateToProps = state => {
   return {
@@ -35,15 +38,15 @@ const ReservationNavigator = createStackNavigator({
 }, {
   navigationOptions: ({ navigation }) => ({
     headerStyle: {
-        backgroundColor: "#512DA8"
+      backgroundColor: "#512DA8"
     },
     headerTitleStyle: {
-        color: "#fff"            
+      color: "#fff"
     },
     headerTintColor: "#fff",
     headerLeft: <Icon name="menu" size={24}
-      iconStyle={{ color: 'white' }} 
-      onPress={ () => navigation.navigate('DrawerToggle') } />    
+      iconStyle={{ color: 'white' }}
+      onPress={() => navigation.navigate('DrawerToggle')} />
   })
 })
 
@@ -131,14 +134,32 @@ const HomeNavigator = createStackNavigator({
   })
 });
 
+const FavoritesNavigator = createStackNavigator({
+  Favorites: { screen: Favorites }
+}, {
+  navigationOptions: ({ navigation }) => ({
+    headerStyle: {
+      backgroundColor: "#512DA8"
+    },
+    headerTitleStyle: {
+      color: "#fff"
+    },
+    headerTintColor: "#fff",
+    headerLeft: <Icon name="menu" size={24}
+      iconStyle={{ color: 'white' }}
+      onPress={() => navigation.navigate('DrawerToggle')} />
+  })
+});
+
+
 const CustomDrawerContentComponent = (props) => (
   <ScrollView>
     <SafeAreaView style={styles.container} forceInset={{ top: 'always', horizontal: 'never' }}>
       <View style={styles.drawerHeader}>
-        <View style={{flex:1}}>
-        <Image source={require('./images/logo.png')} style={styles.drawerImage} />
+        <View style={{ flex: 1 }}>
+          <Image source={require('./images/logo.png')} style={styles.drawerImage} />
         </View>
-        <View style={{flex: 2}}>
+        <View style={{ flex: 2 }}>
           <Text style={styles.drawerHeaderText}>Ristorante Con Fusion</Text>
         </View>
       </View>
@@ -228,11 +249,29 @@ const MainNavigator = createDrawerNavigator({
         ></Icon>
       )
     }
-  }
-}, {
-  drawerBackgroundColor: '#D1C4E9',
-  contentComponent: CustomDrawerContentComponent
-});
+  },
+  Favorites:
+  {
+    screen: FavoritesNavigator,
+    navigationOptions: {
+      title: 'My Favorites',
+      drawerLabel: 'My Favorites',
+      drawerIcon: ({ tintColor, focused }) => (
+        <Icon
+          name='heart'
+          type='font-awesome'
+          size={24}
+          iconStyle={{ color: tintColor }}
+        />
+      )
+    }
+  },
+},
+
+  {
+    drawerBackgroundColor: '#D1C4E9',
+    contentComponent: CustomDrawerContentComponent
+  });
 
 
 class Main extends Component {
@@ -243,7 +282,7 @@ class Main extends Component {
     this.props.fetchPromos();
     this.props.fetchLeaders();
   }
-  
+
 
   render() {
 
