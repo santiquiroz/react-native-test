@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Text, View, ScrollView, StyleSheet, Picker, Switch, Alert,Button, Modal } from 'react-native';
+import { Text, View, ScrollView, StyleSheet, Picker, Switch, Alert, Button, Modal } from 'react-native';
 import DatePicker from 'react-native-datepicker';
 
 import * as Animatable from 'react-native-animatable';
@@ -7,8 +7,8 @@ import * as Animatable from 'react-native-animatable';
 import * as Permissions from 'expo-permissions';
 
 import * as Calendar from 'expo-calendar';
-    
-import {Notifications}  from 'expo';
+
+import { Notifications } from 'expo';
 
 class Reservation extends Component {
 
@@ -46,15 +46,15 @@ class Reservation extends Component {
         });
     }
 
-    showAlert(){
+    showAlert() {
         Alert.alert(
             'Your Reservation is OK?',
-            'Number of Guest: ' +this.state.guests+'\n'+'Smoking? '+this.state.smoking+'\n'+
-            'Date and Time: '+this.state.date,
-            
+            'Number of Guest: ' + this.state.guests + '\n' + 'Smoking? ' + this.state.smoking + '\n' +
+            'Date and Time: ' + this.state.date,
+
             [
-                { text: 'Cancel', onPress: () => {console.log('Cancel Pressed'); this.resetForm()}, style: 'cancel' },
-                { text: 'OK', onPress: () => {console.log('Ok Pressed'); this.handleReservation(); this.resetForm()}},
+                { text: 'Cancel', onPress: () => { console.log('Cancel Pressed'); this.resetForm() }, style: 'cancel' },
+                { text: 'OK', onPress: () => { console.log('Ok Pressed'); this.handleReservation(); this.resetForm() } },
             ],
             { cancelable: false }
         );
@@ -73,9 +73,10 @@ class Reservation extends Component {
 
     async presentLocalNotification(date) {
         await this.obtainNotificationPermission();
+
         Notifications.presentLocalNotificationAsync({
             title: 'Your Reservation',
-            body: 'Reservation for '+ date + ' requested',
+            body: 'Reservation for ' + date + ' requested',
             ios: {
                 sound: true
             },
@@ -98,42 +99,90 @@ class Reservation extends Component {
         return permission;
     }
 
-    async addReservationToCalendar(date) {
-        console.log("puta vida");
-        let permiso = await this.obtainCalendarPermission();
-            const eventId = await Calendar.createEventAsync(Calendar.createCalendarasync , 
-            {
-                title 		  : 'Con Fusion Table Reservation',
-                color 		  : 'blue',
-                entityType 	: Calendar.EntityTypes.EVENT,
-                sourceId 	  : 'arbitraryString',
+    async getDefaultCalendarSource() {
+        const calendars = await Calendar.getCalendarsAsync();
+        const defaultCalendars = calendars.filter(each => each.source.name === 'Default');
+        return defaultCalendars[0].source;
+    }
+
+    async getTheFuckingOSCalendar() {
+        const defaultCalendarSource =
+            Platform.OS === 'ios'
+                ? await getDefaultCalendarSource()
+                : { isLocalAccount: true, name: 'Expo Calendar' };
+        const newCalendarID = await Calendar.createCalendarAsync({
+            title: 'Expo Calendar',
+            color: 'blue',
+            entityType: Calendar.EntityTypes.EVENT,
+            sourceId: defaultCalendarSource.id,
+            source: defaultCalendarSource,
+            name: 'internalCalendarName',
+            ownerAccount: 'personal',
+            accessLevel: Calendar.CalendarAccessLevel.OWNER,
+        });
+        console.log(`Your new calendar ID is: ${newCalendarID}`);
+        return newCalendarID;
+    }
+
+    async ahoraSHI(calendarId,date){
+
+        const finalDate = date.setHours(date.getHours() + 2);
+        const eventId = await Calendar.createEventAsync(null,
+            {   
+
+                title: 'Con Fusion Table Reservation',
+                color: 'blue',
+                sourceId: 'arbitraryString',
                 timeZone: 'Europe/Stockholm',
-                source		  : {	isLocalAccount 	: true,
-                                name			      : 'arbitraryString'
-                            },
+                source: {
+                    isLocalAccount: true,
+                    name: 'arbitraryString'
+                },
                 startDate: date,
-                endDate: date,
-                name		    : 'arbitraryString',
+                endDate: finalDate,
+                name: 'arbitraryString',
                 ownerAccount: 'arbitraryString',
-                accessLevel	: [
-                                Calendar.CalendarAccessLevel.CONTRIBUTOR, 
-                                Calendar.CalendarAccessLevel.EDITOR, 
-                                Calendar.CalendarAccessLevel.FREEBUSY, 
-                                Calendar.CalendarAccessLevel.OVERRIDE, 
-                                Calendar.CalendarAccessLevel.OWNER, 
-                                Calendar.CalendarAccessLevel.READ, 
-                                Calendar.CalendarAccessLevel.RESPOND, 
-                                Calendar.CalendarAccessLevel.ROOT
-                              ]
-                      }
-            ).then((res) => {
-                console.log('creo el puto calendario');
-                console.log('res ==> ', res);
-            }).catch(err => console.log('error ==> ', err))
-            console.log(`Your new calendar ID is: ${eventId}`);
-            console.log('event ==> ', eventId);
-        
-        
+                accessLevel: [
+                    Calendar.CalendarAccessLevel.CONTRIBUTOR,
+                    Calendar.CalendarAccessLevel.EDITOR,
+                    Calendar.CalendarAccessLevel.FREEBUSY,
+                    Calendar.CalendarAccessLevel.OVERRIDE,
+                    Calendar.CalendarAccessLevel.OWNER,
+                    Calendar.CalendarAccessLevel.READ,
+                    Calendar.CalendarAccessLevel.RESPOND,
+                    Calendar.CalendarAccessLevel.ROOT
+                ]
+            }
+        ).then((res) => {
+            console.log('creo el puto calendario');
+            console.log('res ==> ', res);
+        }).catch(err => console.log('error ==> ', err))
+        console.log(`Your new event ID is: ${eventId}`);
+        console.log('event ==> ', eventId);
+        return eventId;
+    }
+
+    async addReservationToCalendar(date) {
+
+
+        console.log("puta vida---------------------------------------------------------------------------------");
+        //Calendar.getCalendarsAsync().then(calendars => console.log(calendars,'calenders'));
+
+        let permiso = await this.obtainCalendarPermission();
+        if (permiso.status == 'granted') {
+
+            let calendarId = await this.getTheFuckingOSCalendar(); 
+            console.log(`Your new calendar ID is: ${calendarId}`);
+            let eventId = await this.ahoraSHI(calendarId,date);
+            Calendar.openEventInCalendar(eventId);
+            
+        }
+        else {
+            console.log("el puto calendario no tiene permisos");
+        }
+
+
+
     }
 
     render() {
