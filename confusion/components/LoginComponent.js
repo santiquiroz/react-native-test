@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import * as Permissions from 'expo-permissions';
 import * as ImagePicker from 'expo-image-picker';
+
+
+
 import { View, StyleSheet, Text, ScrollView, Image } from 'react-native';
 import { Input, CheckBox, Button, Icon } from 'react-native-elements';
 import { createBottomTabNavigator } from 'react-navigation';
@@ -166,6 +169,9 @@ class RegisterTab extends Component {
             }
         }
     }
+
+
+    
 
     static navigationOptions = {
         title: 'Register',

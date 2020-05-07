@@ -5,6 +5,8 @@ import DatePicker from 'react-native-datepicker';
 import * as Animatable from 'react-native-animatable';
 
 import * as Permissions from 'expo-permissions';
+
+import * as Calendar from 'expo-calendar';
     
 import {Notifications}  from 'expo';
 
@@ -30,8 +32,9 @@ class Reservation extends Component {
     }
 
     handleReservation() {
-        this.presentLocalNotification(this.state.date)
+        this.presentLocalNotification(this.state.date);
         //this.toggleModal();
+        this.addReservationToCalendar(this.state.date);
     }
 
     resetForm() {
@@ -82,6 +85,55 @@ class Reservation extends Component {
                 color: '#512DA8'
             }
         });
+    }
+
+    async obtainCalendarPermission() {
+        let permission = await Permissions.getAsync(Permissions.CALENDAR);
+        if (permission.status !== 'granted') {
+            permission = await Permissions.askAsync(Permissions.CALENDAR);
+            if (permission.status !== 'granted') {
+                Alert.alert('Permission not granted to use calendar');
+            }
+        }
+        return permission;
+    }
+
+    async addReservationToCalendar(date) {
+        console.log("puta vida");
+        let permiso = await this.obtainCalendarPermission();
+            const eventId = await Calendar.createEventAsync(Calendar.createCalendarasync , 
+            {
+                title 		  : 'Con Fusion Table Reservation',
+                color 		  : 'blue',
+                entityType 	: Calendar.EntityTypes.EVENT,
+                sourceId 	  : 'arbitraryString',
+                timeZone: 'Europe/Stockholm',
+                source		  : {	isLocalAccount 	: true,
+                                name			      : 'arbitraryString'
+                            },
+                startDate: date,
+                endDate: date,
+                name		    : 'arbitraryString',
+                ownerAccount: 'arbitraryString',
+                accessLevel	: [
+                                Calendar.CalendarAccessLevel.CONTRIBUTOR, 
+                                Calendar.CalendarAccessLevel.EDITOR, 
+                                Calendar.CalendarAccessLevel.FREEBUSY, 
+                                Calendar.CalendarAccessLevel.OVERRIDE, 
+                                Calendar.CalendarAccessLevel.OWNER, 
+                                Calendar.CalendarAccessLevel.READ, 
+                                Calendar.CalendarAccessLevel.RESPOND, 
+                                Calendar.CalendarAccessLevel.ROOT
+                              ]
+                      }
+            ).then((res) => {
+                console.log('creo el puto calendario');
+                console.log('res ==> ', res);
+            }).catch(err => console.log('error ==> ', err))
+            console.log(`Your new calendar ID is: ${eventId}`);
+            console.log('event ==> ', eventId);
+        
+        
     }
 
     render() {
